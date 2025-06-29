@@ -48,11 +48,14 @@ function extractFabrics(sheet, cb) {
                 const valCellCode = XLSX.utils.encode_cell({c, r});
                 const valCell = sheet[valCellCode];
                 if (valCell?.t === 's' || valCell?.t === 'n') {
+                    let val = valCell.v;
+                    if (typeof(val) === 'string')
+                        val = val.trim();
                     if (key) {
-                        fabric[key] = valCell.v;
+                        fabric[key] = val;
                     } else if (lastKey) {
                         const acc = [fabric[lastKey]].flat();
-                        acc.push(valCell.v);
+                        acc.push(val);
                         fabric[lastKey] = acc;
                     }
                 }
