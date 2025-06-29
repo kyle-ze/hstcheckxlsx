@@ -13,7 +13,7 @@ for (let i = 2; i < process.argv.length; i++) {
     const filename = process.argv[i];
     const wb = XLSX.readFile(filename);
     for (const prop of (wb.Workbook?.Sheets ?? [])) {
-        if (prop.Hidden)
+        if (prop.Hidden || prop.name.toLowerCase().trim() === 'function icon')
             continue;
         const sheet = wb.Sheets[prop.name];
         extractFabrics(sheet, x => fabrics.push(x));
