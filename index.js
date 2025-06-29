@@ -18,6 +18,20 @@ for (let i = 2; i < process.argv.length; i++) {
     if (!fileContent.icons) {
         console.warn(`Function icon sheet not found: ${filename}`);
     }
+    // Post processing
+    for (const [sheet, fabrics] of Object.entries(fileContent.fabrics)) {
+        for (const fabric of fabrics) {
+            // Find invalid technical details.
+            for (const detail of (fabric['Technical Details'] ?? [])) {
+                if (!fileContent.icons.find(x => normalizeTechnicalDetails(x) === normalizeTechnicalDetails(detail)))
+                    console.error(`Unknown technical detail type: '${detail}' (#: ${fabric['#']}) in ${sheet} of ${filename}`);
+            }
+        }
+    }
 }
 console.log(JSON.stringify(output));
 process.exit(errorCount);
+
+function normalizeTechnicalDetails(s) {
+    return s.toLowerCase().replace(/[-& ]/g, '');
+}
