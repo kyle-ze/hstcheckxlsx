@@ -8,15 +8,17 @@ if (process.argv.length < 3) {
     process.exit(1);
 }
 
-const fabrics = [];
+const fabricMap = {};
 for (let i = 2; i < process.argv.length; i++) {
     const filename = process.argv[i];
     const wb = XLSX.readFile(filename);
     for (const prop of (wb.Workbook?.Sheets ?? [])) {
         if (prop.Hidden || prop.name.toLowerCase().trim() === 'function icon')
             continue;
+        const fabrics = [];
         const sheet = wb.Sheets[prop.name];
         extractFabrics(sheet, x => fabrics.push(x));
+        fabricMap[`${filename}/${prop.name}`] = fabrics;
     }
 }
 
@@ -61,4 +63,4 @@ function extractFabrics(sheet, cb) {
     }
 }
 
-console.log(JSON.stringify(fabrics));
+console.log(JSON.stringify(fabricMap));
