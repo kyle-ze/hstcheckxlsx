@@ -26,6 +26,11 @@ for (let i = 2; i < process.argv.length; i++) {
                 if (!fileContent.icons.find(x => normalizeTechnicalDetails(x) === normalizeTechnicalDetails(detail)))
                     console.error(`Unknown technical detail type: '${detail}' (#: ${fabric['#']}) in ${sheet} of ${filename}`);
             }
+            // Break 'Product Features' values.
+            const productFeatures = fabric['Product Features'];
+            if (typeof(productFeatures) === 'string') {
+                fabric['Product Features'] = productFeatures.split('\r\n').map(s => s.trim().replace(/^(#|•) */, ''));
+            }
         }
     }
 }
