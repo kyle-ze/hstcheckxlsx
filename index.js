@@ -8,17 +8,48 @@ if (process.argv.length < 3) {
     process.exit(1);
 }
 
-const fabricMap = {};
+const output = {};
 for (let i = 2; i < process.argv.length; i++) {
     const filename = process.argv[i];
     const wb = XLSX.readFile(filename);
+    const fileContent = output[filename] = {};
+
+    const icons = new Set();
+    const iconSheetName = (wb.Workbook?.Sheets ?? []).find(prop => isIconSheet(prop))?.name;
+    const iconSheet = wb.Sheets[iconSheetName];
+    if (iconSheet) {
+        extractIcons(iconSheet, x => icons.add(x));
+        fileContent.icons = Array.from(icons);
+    } else {
+        console.warn(`Function icon sheet not found: ${filename}`);
+    }
+
+    const fabricMap = fileContent.fabrics = {};
     for (const prop of (wb.Workbook?.Sheets ?? [])) {
-        if (prop.Hidden || prop.name.toLowerCase().trim() === 'function icon')
+        if (prop.Hidden || isIconSheet(prop))
             continue;
         const fabrics = [];
         const sheet = wb.Sheets[prop.name];
         extractFabrics(sheet, x => fabrics.push(x));
-        fabricMap[`${filename}/${prop.name}`] = fabrics;
+        fabricMap[prop.name] = fabrics;
+    }
+}
+console.log(JSON.stringify(output));
+
+function isIconSheet(prop) {
+    return prop.name?.toLowerCase().trim() === 'function icon';
+}
+
+function extractIcons(sheet, cb) {
+    const [b, e] = sheet["!ref"].split(':');
+    const beg = XLSX.utils.decode_cell(b);
+    const end = XLSX.utils.decode_cell(e);
+    for (let r = beg.r; r <= end.r; ++r) {
+        for (let c = beg.c; c <= end.c; ++c) {
+            const cell = sheet[XLSX.utils.encode_cell({c, r})];
+            if (cell?.t === 's')
+                cb(cell.v.trim());
+        }
     }
 }
 
@@ -29,7 +60,7 @@ function extractFabrics(sheet, cb) {
     let fabrics = [];
     let lastKey = undefined;
     for (let r = beg.r; r <= end.r; ++r) {
-        const keyCellCode = XLSX.utils.encode_cell({c: beg.c, r}); 
+        const keyCellCode = XLSX.utils.encode_cell({c: beg.c, r});
         const keyCell = sheet[keyCellCode];
         let key = keyCell?.v;
         if (key === '#') {
@@ -65,5 +96,3 @@ function extractFabrics(sheet, cb) {
         lastKey = key ?? lastKey;
     }
 }
-
-console.log(JSON.stringify(fabricMap));
