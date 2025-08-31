@@ -1,0 +1,15 @@
+name: Sandbox
+
+on:
+  push:
+    branches:
+      - master
+      - unstable
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/master' && 'production' || 'development' }}
+    steps:
+      - name: Say hello
+        run: echo ${{ secrets.MESSAGE }}
