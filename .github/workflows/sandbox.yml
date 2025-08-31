@@ -12,4 +12,6 @@ jobs:
     environment: ${{ github.ref == 'refs/heads/master' && 'production' || 'development' }}
     steps:
       - name: Say hello
-        run: echo "${{ secrets.MESSAGE }}"
+        run: echo "${#MESSAGE}" "${MESSAGE}"
+        env:
+          MESSAGE: ${{ secrets.MESSAGE }}
